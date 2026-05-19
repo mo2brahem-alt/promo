@@ -197,9 +197,20 @@ async function login() {
 }
 
 async function logout() {
-    await axios.post('/logout');
+    try {
+        await window.refreshCsrfToken();
+        await axios.post('/logout');
+    } catch (error) {
+        if (error.response?.status !== 401 && error.response?.status !== 419) {
+            flash(errorText(error), 'error');
+            return;
+        }
+    }
+
     user.value = null;
     view.value = 'dashboard';
+    seller.validation = null;
+    seller.last = [];
     window.history.pushState({}, '', '/');
 }
 

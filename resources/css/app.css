@@ -111,6 +111,9 @@ button:disabled {
     display: grid;
     grid-template-columns: 280px 1fr;
     isolation: isolate;
+    background:
+        radial-gradient(circle at 88% 8%, rgba(15, 118, 110, .16), transparent 28%),
+        radial-gradient(circle at 18% 14%, rgba(37, 99, 235, .13), transparent 30%);
 }
 
 .sidebar {
@@ -125,6 +128,7 @@ button:disabled {
     gap: 22px;
     box-shadow: -8px 0 34px rgba(15, 23, 42, .16);
     overflow: hidden;
+    border-left: 1px solid rgba(255,255,255,.08);
 }
 
 .sidebar::before {
@@ -200,6 +204,20 @@ button:disabled {
     box-shadow: 0 12px 30px rgba(15, 23, 42, .06);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+.topbar::after {
+    content: "";
+    position: absolute;
+    inset-inline: 28px;
+    bottom: 0;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand), var(--brand-2), var(--accent));
+    opacity: .9;
 }
 
 .content {
@@ -221,6 +239,17 @@ button:disabled {
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    overflow: hidden;
+}
+
+.panel::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(15, 118, 110, .75), rgba(37, 99, 235, .75), rgba(245, 158, 11, .7));
+    opacity: .62;
 }
 
 .panel:hover {
@@ -257,6 +286,7 @@ button:disabled {
 }
 
 .card {
+    position: relative;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -265,6 +295,19 @@ button:disabled {
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    overflow: hidden;
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    top: -45px;
+    left: -30px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(37, 99, 235, .18), transparent 66%);
+    pointer-events: none;
 }
 
 .card:hover {
