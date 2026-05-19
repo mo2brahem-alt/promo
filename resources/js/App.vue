@@ -37,7 +37,7 @@
                 </div>
             </div>
             <nav class="nav">
-                <button v-for="item in navItems" :key="item.view" :class="{ active: view === item.view }" @click="setView(item.view)">
+                <button v-for="item in navItems" :key="item.view" :class="{ active: view === item.view }" @click="navigate(item.view)">
                     {{ item.label }}
                 </button>
             </nav>
@@ -72,7 +72,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 const user = ref(null);
 const loading = ref(true);
 const busy = ref(false);
-const view = ref('dashboard');
+const view = ref(viewFromPath(window.location.pathname));
 const message = ref('');
 const messageType = ref('info');
 const loginForm = reactive({ email: 'superadmin@example.com', password: 'password' });
@@ -109,6 +109,31 @@ const currentTitle = computed(() => navItems.value.find((item) => item.view === 
 const customersList = computed(() => customers.value.data || []);
 const branchesList = computed(() => branches.value.data || []);
 const promoCodesList = computed(() => promoCodes.value.data || []);
+
+const viewPaths = {
+    dashboard: '/dashboard',
+    seller: '/seller/promo-validation',
+    customers: '/customers',
+    branches: '/branches',
+    promoCodes: '/promo-codes',
+    reports: '/reports',
+    users: '/users',
+};
+
+function viewFromPath(path) {
+    const normalized = path.replace(/\/+$/, '') || '/';
+
+    return {
+        '/': 'dashboard',
+        '/dashboard': 'dashboard',
+        '/seller/promo-validation': 'seller',
+        '/customers': 'customers',
+        '/branches': 'branches',
+        '/promo-codes': 'promoCodes',
+        '/reports': 'reports',
+        '/users': 'users',
+    }[normalized] || 'dashboard';
+}
 
 function roleLabel(role) {
     return {
@@ -175,21 +200,40 @@ async function logout() {
     await axios.post('/logout');
     user.value = null;
     view.value = 'dashboard';
+    window.history.pushState({}, '', '/');
 }
 
 async function setView(next) {
     view.value = next;
-    await bootstrapView();
+    try {
+        await bootstrapView();
+    } catch (error) {
+        flash(errorText(error), 'error');
+    }
+}
+
+async function navigate(next) {
+    window.history.pushState({}, '', viewPaths[next] || '/dashboard');
+    await setView(next);
 }
 
 async function bootstrapView() {
-    await loadDashboard();
+    const tasks = [loadDashboard()];
+
     if (canManage.value || canReports.value) {
-        await Promise.all([loadCustomers('', 1, true), loadBranches('', 1, true), loadPromoCodes('', 1, true)]);
+        tasks.push(loadCustomers('', 1, true), loadBranches('', 1, true), loadPromoCodes('', 1, true));
     }
-    if (user.value?.role === 'super_admin' || canManage.value || canReports.value) await loadUsers();
-    if (view.value === 'seller' || user.value?.role === 'seller') await loadSellerLast();
-    if (view.value === 'reports') await loadReports({});
+
+    if (user.value?.role === 'super_admin' || canManage.value || canReports.value) tasks.push(loadUsers());
+    if (view.value === 'seller' || user.value?.role === 'seller') tasks.push(loadSellerLast());
+    if (view.value === 'reports') tasks.push(loadReports({}));
+
+    const results = await Promise.allSettled(tasks);
+    const failed = results.find((result) => result.status === 'rejected');
+
+    if (failed) {
+        flash(errorText(failed.reason), 'error');
+    }
 }
 
 async function loadDashboard() {
@@ -347,8 +391,17 @@ function exportReports(filters = {}) {
 }
 
 onMounted(async () => {
+    window.addEventListener('popstate', () => {
+        setView(viewFromPath(window.location.pathname));
+    });
+
     await loadMe();
-    if (user.value?.role === 'seller') view.value = 'seller';
+    if (user.value?.role === 'seller') {
+        view.value = 'seller';
+        if (window.location.pathname !== viewPaths.seller) {
+            window.history.replaceState({}, '', viewPaths.seller);
+        }
+    }
     if (user.value) await bootstrapView();
 });
 </script>
