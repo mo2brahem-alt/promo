@@ -7,7 +7,7 @@
         <form class="login-box grid" autocomplete="off" @submit.prevent="login">
             <div>
                 <div class="brand" style="color: var(--text)">
-                    <img class="brand-logo login-logo" src="/images/elbardisi-logo.svg" alt="Elbardisi Group">
+                    <img class="brand-logo login-logo" :src="logoUrl" alt="Elbardisi Group">
                     <div>
                         <h1 style="margin:0">Promo</h1>
                         <p class="label" style="margin:4px 0 0">منصة إدارة Promo Codes</p>
@@ -30,7 +30,7 @@
     <section v-else class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <img class="brand-logo sidebar-logo" src="/images/elbardisi-logo.svg" alt="Elbardisi Group">
+                <img class="brand-logo sidebar-logo" :src="logoUrl" alt="Elbardisi Group">
                 <div>
                     <strong>Promo</strong>
                     <div class="label" style="color:#bdc7d8">{{ roleLabel(user.role) }}</div>
@@ -46,7 +46,7 @@
         <main class="main">
             <header class="topbar">
                 <div class="topbar-title">
-                    <img class="topbar-logo" src="/images/elbardisi-logo.svg" alt="Elbardisi Group">
+                    <img class="topbar-logo" :src="logoUrl" alt="Elbardisi Group">
                     <div>
                         <h2 style="margin:0">{{ currentTitle }}</h2>
                         <div class="label">{{ user.name }} - {{ roleLabel(user.role) }}</div>
@@ -72,6 +72,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 
+const logoUrl = '/images/elbardisi-logo.svg';
 const user = ref(null);
 const loading = ref(true);
 const busy = ref(false);
