@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\PromoCode;
+use App\Models\PromoCodeRedemption;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -126,9 +127,45 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        $inactivePromo = PromoCode::updateOrCreate(
+            ['code' => 'INACTIVE20'],
+            [
+                'title' => 'كود غير نشط',
+                'description' => 'كود غير نشط لاختبار الحالة.',
+                'discount_type' => PromoCode::DISCOUNT_PERCENTAGE,
+                'discount_value' => 20,
+                'max_invoice_amount' => 4000,
+                'max_discount_amount' => 500,
+                'starts_at' => now()->subDay(),
+                'expires_at' => now()->addMonth(),
+                'max_total_uses' => 50,
+                'max_uses_per_customer' => 1,
+                'is_active' => false,
+                'created_by' => $manager->id,
+            ],
+        );
+
         $activePromo->customers()->sync($customers->pluck('id')->all());
         $activePromo->branches()->sync([$testBranch->id]);
         $expiredPromo->customers()->sync([$customers->first()->id]);
         $expiredPromo->branches()->sync([$testBranch->id]);
+        $inactivePromo->customers()->sync([$customers->last()->id]);
+        $inactivePromo->branches()->sync([$testBranch->id]);
+
+        PromoCodeRedemption::updateOrCreate(
+            [
+                'promo_code_id' => $activePromo->id,
+                'customer_id' => $customers->first()->id,
+                'invoice_number' => 'POS-1001',
+            ],
+            [
+                'branch_id' => $testBranch->id,
+                'seller_id' => $seller->id,
+                'invoice_amount' => 1200,
+                'discount_percentage' => 10,
+                'discount_amount' => 120,
+                'redeemed_at' => now(),
+            ],
+        );
     }
 }

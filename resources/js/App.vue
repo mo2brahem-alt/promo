@@ -399,8 +399,10 @@ const DashboardView = {
                 <div class="cards">
                     <div class="card"><div class="label">العملاء</div><div class="metric">{{ dashboard.customers_count || 0 }}</div></div>
                     <div class="card"><div class="label">الفروع</div><div class="metric">{{ dashboard.branches_count || 0 }}</div></div>
+                    <div class="card"><div class="label">إجمالي الأكواد</div><div class="metric">{{ dashboard.promo_codes_count || 0 }}</div></div>
                     <div class="card"><div class="label">الأكواد النشطة</div><div class="metric">{{ dashboard.active_codes_count || 0 }}</div></div>
                     <div class="card"><div class="label">استخدامات اليوم</div><div class="metric">{{ dashboard.today_redemptions_count || 0 }}</div></div>
+                    <div class="card"><div class="label">خصومات اليوم</div><div class="metric">{{ dashboard.today_discount_amount || 0 }}</div></div>
                 </div>
                 <div class="panel">
                     <div class="panel-head"><h3 style="margin:0">آخر 10 استخدامات</h3><button v-if="canReports" class="btn" @click="$emit('go', 'reports')">التقارير</button></div>
@@ -459,13 +461,14 @@ const CustomersView = {
     methods: {
         submit() { this.$emit('save', this.form); this.form = { name: '', phone: '', email: '', city: '', notes: '', is_active: true }; },
         pick(row) { this.form = { ...row }; },
+        reset() { this.form = { name: '', phone: '', email: '', city: '', notes: '', is_active: true }; },
         doImport() { if (this.importFile) this.$emit('import', { file: this.importFile, duplicate_strategy: this.duplicate_strategy }); },
     },
     components: { EmptyRow },
     template: `
         <section class="grid">
             <div class="panel">
-                <div class="panel-head"><h3 style="margin:0">إدارة العملاء</h3><div class="actions"><input class="input" style="width:260px" v-model="search" placeholder="بحث بالاسم أو الجوال"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
+                <div class="panel-head"><h3 style="margin:0">العملاء</h3><div class="actions"><button class="btn primary" @click="reset">إضافة عميل</button><input class="input" style="width:260px" v-model="search" placeholder="بحث بالاسم أو الجوال"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
                 <form class="form" @submit.prevent="submit">
                     <label class="field"><span>الاسم</span><input class="input" v-model="form.name" required></label>
                     <label class="field"><span>الجوال</span><input class="input" v-model="form.phone" required></label>
@@ -498,12 +501,13 @@ const BranchesView = {
     methods: {
         pick(row) { this.form = { ...row, seller_ids: (row.users || []).map((u) => u.id) }; },
         submit() { this.$emit('save', this.form); this.form = { name: '', code: '', city: '', address: '', is_active: true, seller_ids: [] }; },
+        reset() { this.form = { name: '', code: '', city: '', address: '', is_active: true, seller_ids: [] }; },
     },
     components: { EmptyRow },
     template: `
         <section class="grid">
             <div class="panel">
-                <div class="panel-head"><h3 style="margin:0">إدارة الفروع</h3><div class="actions"><input class="input" style="width:260px" v-model="search" placeholder="بحث"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
+                <div class="panel-head"><h3 style="margin:0">الفروع</h3><div class="actions"><button class="btn primary" @click="reset">إضافة فرع</button><input class="input" style="width:260px" v-model="search" placeholder="بحث"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
                 <form class="form" @submit.prevent="submit">
                     <label class="field"><span>اسم الفرع</span><input class="input" v-model="form.name" required></label>
                     <label class="field"><span>كود الفرع</span><input class="input" v-model="form.code" required></label>
@@ -538,7 +542,7 @@ const PromoCodesView = {
     template: `
         <section class="grid">
             <div class="panel">
-                <div class="panel-head"><h3 style="margin:0">إنشاء وتعديل Promo Code</h3><div class="actions"><input class="input" style="width:260px" v-model="search" placeholder="بحث بالكود أو العنوان"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
+                <div class="panel-head"><h3 style="margin:0">الأكواد</h3><div class="actions"><button class="btn primary" @click="clear">إنشاء كود</button><input class="input" style="width:260px" v-model="search" placeholder="بحث بالكود أو العنوان"><button class="btn" @click="$emit('search', search)">بحث</button></div></div>
                 <form class="form" @submit.prevent="submit">
                     <label class="field"><span>الكود</span><div class="actions"><input class="input" v-model="form.code" required><button type="button" class="btn" @click="$emit('generate', code => form.code = code)">توليد</button></div></label>
                     <label class="field"><span>العنوان</span><input class="input" v-model="form.title"></label>

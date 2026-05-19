@@ -30,6 +30,7 @@ class DashboardController extends Controller
             'role' => $user->role,
             'customers_count' => Customer::count(),
             'branches_count' => Branch::count(),
+            'promo_codes_count' => PromoCode::count(),
             'active_codes_count' => PromoCode::where('is_active', true)->count(),
             'expired_codes_count' => PromoCode::whereNotNull('expires_at')->where('expires_at', '<', now())->count(),
             'today_redemptions_count' => PromoCodeRedemption::whereDate('redeemed_at', today())->count(),
