@@ -199,6 +199,27 @@ button:disabled {
     box-shadow: 0 16px 34px rgba(8, 145, 178, .34);
 }
 
+.brand-logo {
+    display: block;
+    object-fit: contain;
+    background: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.72);
+    border-radius: 8px;
+    box-shadow: 0 16px 34px rgba(8, 18, 38, .18);
+}
+
+.login-logo {
+    width: 92px;
+    height: 58px;
+    padding: 6px;
+}
+
+.sidebar-logo {
+    width: 72px;
+    height: 50px;
+    padding: 5px;
+}
+
 .nav {
     position: relative;
     z-index: 1;
@@ -246,6 +267,25 @@ button:disabled {
     position: sticky;
     top: 0;
     z-index: 4;
+}
+
+.topbar-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.topbar-logo {
+    width: 74px;
+    height: 42px;
+    object-fit: contain;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.86);
+    border: 1px solid rgba(255,255,255,.72);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .10);
+    flex: 0 0 auto;
 }
 
 .topbar::after {
@@ -672,6 +712,11 @@ tbody tr:hover {
         flex: 0 0 38px;
     }
 
+    .sidebar-logo {
+        width: 64px;
+        height: 44px;
+    }
+
     .nav {
         display: flex;
         gap: 8px;
@@ -700,6 +745,16 @@ tbody tr:hover {
     .topbar h2 {
         font-size: 20px;
         line-height: 1.35;
+    }
+
+    .topbar-title {
+        width: 100%;
+        align-items: flex-start;
+    }
+
+    .topbar-logo {
+        width: 64px;
+        height: 38px;
     }
 
     .topbar .btn {
@@ -815,6 +870,18 @@ tbody tr:hover {
 
     .brand {
         gap: 8px;
+    }
+
+    .login-logo {
+        width: 78px;
+        height: 50px;
+    }
+
+    .sidebar-logo,
+    .topbar-logo {
+        width: 58px;
+        height: 36px;
+        padding: 4px;
     }
 
     .nav button {
