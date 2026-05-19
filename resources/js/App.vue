@@ -404,9 +404,6 @@ onMounted(async () => {
     }
     if (user.value) await bootstrapView();
 });
-</script>
-
-<script>
 const EmptyRow = {
     props: ['cols', 'text'],
     template: `<tr><td :colspan="cols" class="label">{{ text || 'لا توجد بيانات' }}</td></tr>`,
@@ -794,7 +791,4 @@ const UsersView = {
     `,
 };
 
-export default {
-    components: { DashboardView, SellerView, CustomersView, BranchesView, PromoCodesView, ReportsView, UsersView },
-};
 </script>
