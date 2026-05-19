@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Setup PHP on GitHub Actions
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
@@ -26,7 +26,7 @@ jobs:
         run: |
           composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
-      - name: Setup Node
+      - name: Setup Node on GitHub Actions
         if: hashFiles('package.json') != ''
         uses: actions/setup-node@v4
         with:
@@ -57,7 +57,6 @@ jobs:
           rm -f .env.*
           rm -f .editorconfig
           rm -f .gitattributes
-          rm -f package-lock.json
           rm -rf storage/logs/*
           rm -rf storage/framework/cache/*
           rm -rf storage/framework/sessions/*
@@ -87,17 +86,23 @@ jobs:
           script: |
             cd ${{ secrets.HOSTINGER_PATH }}
 
+            PHP_BIN="/opt/alt/php82/usr/bin/php"
+
+            echo "Using PHP:"
+            $PHP_BIN -v
+
             if [ -f artisan ]; then
-              php artisan config:clear || true
-              php artisan cache:clear || true
-              php artisan route:clear || true
-              php artisan view:clear || true
+              $PHP_BIN artisan config:clear || true
+              $PHP_BIN artisan cache:clear || true
+              $PHP_BIN artisan route:clear || true
+              $PHP_BIN artisan view:clear || true
 
-              php artisan migrate --force || true
+              $PHP_BIN artisan migrate --force || true
+              $PHP_BIN artisan db:seed --force || true
 
-              php artisan config:cache || true
-              php artisan route:cache || true
-              php artisan view:cache || true
+              $PHP_BIN artisan config:cache || true
+              $PHP_BIN artisan route:cache || true
+              $PHP_BIN artisan view:cache || true
             else
               echo "No Laravel artisan file found. Skipping Laravel commands."
             fi
