@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">Elbardisi Group</title>
+  <desc id="desc">Elbardisi Group brand logo.</desc>
+  <rect width="720" height="360" fill="transparent"/>
+  <g fill="none" stroke="#050505" stroke-width="18" stroke-linejoin="miter" stroke-linecap="butt">
+    <path d="M260 28h86c66 0 116 46 116 111 0 66-49 112-116 112h-86z"/>
+    <path d="M294 66h48c43 0 76 30 76 73s-33 74-76 74h-48z"/>
+    <path d="M382 34c78 0 128 42 157 86l-45 38c-25-36-58-56-105-56-68 0-112 48-112 113s44 113 112 113c54 0 92-27 108-72h-113v-58h178v50c-20 86-87 142-176 142-105 0-182-75-182-175 0-101 77-181 178-181z"/>
+    <path d="M386 102c20 34 20 190-67 206"/>
+    <path d="M339 125c-7 36-45 44-67 55 41 8 73 35 67 83"/>
+  </g>
+  <g fill="#050505">
+    <text x="360" y="308" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-size="70" font-weight="800" letter-spacing="18">ELBARDISI</text>
+    <text x="510" y="354" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-size="44" font-weight="500" letter-spacing="14">GROUP</text>
+  </g>
+</svg>
