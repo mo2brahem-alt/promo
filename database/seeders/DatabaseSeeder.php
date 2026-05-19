@@ -91,6 +91,51 @@ class DatabaseSeeder extends Seeder
 
         $seller->branches()->sync([$testBranch->id]);
 
+        $requestedBranches = [
+            ['code' => 'MAIN', 'name' => 'الفرع الرئيسي', 'city' => 'القاهرة', 'address' => 'الفرع الرئيسي', 'email' => 'seller.main@promo.test', 'seller' => 'بائع الفرع الرئيسي', 'phone' => '01020000001'],
+            ['code' => 'BR140T', 'name' => 'فرع 140ط', 'city' => 'القاهرة', 'address' => 'فرع 140ط', 'email' => 'seller.140t@promo.test', 'seller' => 'بائع فرع 140ط', 'phone' => '01020000002'],
+            ['code' => 'ALEX', 'name' => 'فرع الاسكندرية', 'city' => 'الإسكندرية', 'address' => 'فرع الاسكندرية', 'email' => 'seller.alexandria@promo.test', 'seller' => 'بائع فرع الاسكندرية', 'phone' => '01020000003'],
+            ['code' => 'HANOVIL', 'name' => 'فرع الهنوفيل', 'city' => 'الإسكندرية', 'address' => 'فرع الهنوفيل', 'email' => 'seller.hanovil@promo.test', 'seller' => 'بائع فرع الهنوفيل', 'phone' => '01020000004'],
+            ['code' => 'TANTA', 'name' => 'فرع طنطا', 'city' => 'الغربية', 'address' => 'فرع طنطا', 'email' => 'seller.tanta@promo.test', 'seller' => 'بائع فرع طنطا', 'phone' => '01020000005'],
+            ['code' => 'MANSOURA', 'name' => 'فرع المنصورة', 'city' => 'الدقهلية', 'address' => 'فرع المنصورة', 'email' => 'seller.mansoura@promo.test', 'seller' => 'بائع فرع المنصورة', 'phone' => '01020000006'],
+            ['code' => 'DAMIETTA', 'name' => 'فرع دمياط', 'city' => 'دمياط', 'address' => 'فرع دمياط', 'email' => 'seller.damietta@promo.test', 'seller' => 'بائع فرع دمياط', 'phone' => '01020000007'],
+            ['code' => 'ZAGAZIG', 'name' => 'فرع الزقازيق', 'city' => 'الشرقية', 'address' => 'فرع الزقازيق', 'email' => 'seller.zagazig@promo.test', 'seller' => 'بائع فرع الزقازيق', 'phone' => '01020000008'],
+            ['code' => 'BENISUEF', 'name' => 'فرع بني سويف', 'city' => 'بني سويف', 'address' => 'فرع بني سويف', 'email' => 'seller.benisuef@promo.test', 'seller' => 'بائع فرع بني سويف', 'phone' => '01020000009'],
+            ['code' => 'FAISAL', 'name' => 'فرع فيصل', 'city' => 'الجيزة', 'address' => 'فرع فيصل', 'email' => 'seller.faisal@promo.test', 'seller' => 'بائع فرع فيصل', 'phone' => '01020000010'],
+            ['code' => 'MOHANDESIN', 'name' => 'فرع المهندسين', 'city' => 'الجيزة', 'address' => 'فرع المهندسين', 'email' => 'seller.mohandesin@promo.test', 'seller' => 'بائع فرع المهندسين', 'phone' => '01020000011'],
+            ['code' => 'SELIM', 'name' => 'فرع سليم', 'city' => 'القاهرة', 'address' => 'فرع سليم', 'email' => 'seller.selim@promo.test', 'seller' => 'بائع فرع سليم', 'phone' => '01020000012'],
+            ['code' => 'NOZHA', 'name' => 'فرع النزهة', 'city' => 'القاهرة', 'address' => 'فرع النزهة', 'email' => 'seller.nozha@promo.test', 'seller' => 'بائع فرع النزهة', 'phone' => '01020000013'],
+            ['code' => 'MOKATTAM', 'name' => 'فرع المقطم', 'city' => 'القاهرة', 'address' => 'فرع المقطم', 'email' => 'seller.mokattam@promo.test', 'seller' => 'بائع فرع المقطم', 'phone' => '01020000014'],
+            ['code' => 'ISMAILIA', 'name' => 'فرع الاسماعيلية', 'city' => 'الإسماعيلية', 'address' => 'فرع الاسماعيلية', 'email' => 'seller.ismailia@promo.test', 'seller' => 'بائع فرع الاسماعيلية', 'phone' => '01020000015'],
+            ['code' => 'SHOUBRA', 'name' => 'فرع شبرا مصر', 'city' => 'القاهرة', 'address' => 'فرع شبرا مصر', 'email' => 'seller.shoubra@promo.test', 'seller' => 'بائع فرع شبرا مصر', 'phone' => '01020000016'],
+            ['code' => 'OCTOBER', 'name' => 'فرع اكتوبر', 'city' => 'الجيزة', 'address' => 'فرع اكتوبر', 'email' => 'seller.october@promo.test', 'seller' => 'بائع فرع اكتوبر', 'phone' => '01020000017'],
+        ];
+
+        foreach ($requestedBranches as $branchData) {
+            $branch = Branch::updateOrCreate(
+                ['code' => $branchData['code']],
+                [
+                    'name' => $branchData['name'],
+                    'city' => $branchData['city'],
+                    'address' => $branchData['address'],
+                    'is_active' => true,
+                ],
+            );
+
+            $branchSeller = User::updateOrCreate(
+                ['email' => $branchData['email']],
+                [
+                    'name' => $branchData['seller'],
+                    'phone' => $branchData['phone'],
+                    'password' => 'password',
+                    'role' => User::ROLE_SELLER,
+                    'is_active' => true,
+                ],
+            );
+
+            $branchSeller->branches()->sync([$branch->id]);
+        }
+
         $customers = collect([
             ['name' => 'عميل تجريبي 1', 'phone' => '01000000001', 'email' => 'customer1@example.com', 'city' => 'القاهرة'],
             ['name' => 'عميل تجريبي 2', 'phone' => '01000000002', 'email' => 'customer2@example.com', 'city' => 'الجيزة'],
