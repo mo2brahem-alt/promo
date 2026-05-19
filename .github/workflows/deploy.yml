@@ -7,12 +7,36 @@ on:
 
 jobs:
   deploy:
-    name: Deploy via SSH
+    name: Deploy Laravel to Hostinger
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, ctype, fileinfo, json, openssl, pdo, pdo_mysql, tokenizer, xml
+          coverage: none
+
+      - name: Install Composer dependencies
+        if: hashFiles('composer.json') != ''
+        run: |
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+      - name: Setup Node
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build frontend assets
+        if: hashFiles('package.json') != ''
+        run: |
+          npm ci
+          npm run build
 
       - name: Deploy files to Hostinger via SSH
         uses: appleboy/scp-action@v0.1.7
@@ -31,11 +55,10 @@ jobs:
             .github
             .env
             node_modules
-            vendor
-            storage/logs
-            storage/framework/cache
-            storage/framework/sessions
-            storage/framework/views
+            storage/logs/*
+            storage/framework/cache/*
+            storage/framework/sessions/*
+            storage/framework/views/*
             bootstrap/cache/*.php
 
       - name: Run Laravel commands on Hostinger
@@ -48,17 +71,17 @@ jobs:
           script: |
             cd ${{ secrets.HOSTINGER_PATH }}
 
-            if [ -f composer.json ]; then
-              composer install --no-dev --optimize-autoloader
-            fi
-
             if [ -f artisan ]; then
-              php artisan config:clear
-              php artisan cache:clear
-              php artisan route:clear
-              php artisan view:clear
-              php artisan migrate --force
-              php artisan config:cache
-              php artisan route:cache
-              php artisan view:cache
+              php artisan config:clear || true
+              php artisan cache:clear || true
+              php artisan route:clear || true
+              php artisan view:clear || true
+
+              php artisan migrate --force || true
+
+              php artisan config:cache || true
+              php artisan route:cache || true
+              php artisan view:cache || true
+            else
+              echo "No Laravel artisan file found. Skipping Laravel commands."
             fi
