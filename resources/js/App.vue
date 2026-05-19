@@ -4,7 +4,7 @@
     </section>
 
     <section v-else-if="!user" class="login-page">
-        <form class="login-box grid" @submit.prevent="login">
+        <form class="login-box grid" autocomplete="off" @submit.prevent="login">
             <div>
                 <div class="brand" style="color: var(--text)">
                     <div class="brand-mark">P</div>
@@ -17,11 +17,11 @@
             <div v-if="message" class="notice error">{{ message }}</div>
             <label class="field">
                 <span>البريد الإلكتروني</span>
-                <input v-model="loginForm.email" class="input" type="email" required>
+                <input v-model="loginForm.email" class="input" type="email" name="email" autocomplete="username" required>
             </label>
             <label class="field">
                 <span>كلمة المرور</span>
-                <input v-model="loginForm.password" class="input" type="password" required>
+                <input v-model="loginForm.password" class="input" type="password" name="password" autocomplete="current-password" required>
             </label>
             <button class="btn primary" :disabled="busy">دخول</button>
         </form>
@@ -75,7 +75,7 @@ const busy = ref(false);
 const view = ref(viewFromPath(window.location.pathname));
 const message = ref('');
 const messageType = ref('info');
-const loginForm = reactive({ email: 'superadmin@example.com', password: 'password' });
+const loginForm = reactive({ email: '', password: '' });
 
 const dashboard = ref({});
 const customers = ref({ data: [] });
