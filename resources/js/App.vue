@@ -125,6 +125,10 @@ function flash(text, type = 'info') {
 }
 
 function errorText(error) {
+    if (error.response?.status === 419) {
+        return 'انتهت الجلسة، برجاء تحديث الصفحة والمحاولة مرة أخرى.';
+    }
+
     const data = error.response?.data;
     if (data?.errors) return Object.values(data.errors).flat().join(' ');
     return data?.message || 'حدث خطأ غير متوقع.';
@@ -156,13 +160,14 @@ async function loadMe() {
 }
 
 async function login() {
-    const data = await api(() => axios.post('/api/login', loginForm), 'تم تسجيل الدخول.');
+    await window.refreshCsrfToken();
+    const data = await api(() => axios.post('/login', loginForm), 'تم تسجيل الدخول.');
     user.value = data.user;
     await bootstrapView();
 }
 
 async function logout() {
-    await axios.post('/api/logout');
+    await axios.post('/logout');
     user.value = null;
     view.value = 'dashboard';
 }

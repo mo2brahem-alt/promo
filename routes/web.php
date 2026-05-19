@@ -8,7 +8,19 @@ use App\Http\Controllers\Api\PromoCodeController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SellerPromoController;
 use App\Http\Controllers\Api\UserController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/csrf-cookie', function (Request $request) {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+Route::get('/sanctum/csrf-cookie', function (Request $request) {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
 Route::prefix('api')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
