@@ -35,6 +35,17 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
+        User::updateOrCreate(
+            ['email' => 'admin@promo.test'],
+            [
+                'name' => 'Promo Admin',
+                'phone' => '01010000005',
+                'password' => 'password',
+                'role' => User::ROLE_SUPER_ADMIN,
+                'is_active' => true,
+            ],
+        );
+
         $manager = User::updateOrCreate(
             ['email' => 'manager@example.com'],
             [
