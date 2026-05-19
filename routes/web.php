@@ -12,11 +12,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/csrf-cookie', function (Request $request) {
-    return response()->json(['csrf_token' => csrf_token()]);
+    return response()
+        ->json(['csrf_token' => csrf_token()])
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 });
 
 Route::get('/sanctum/csrf-cookie', function (Request $request) {
-    return response()->json(['csrf_token' => csrf_token()]);
+    return response()
+        ->json(['csrf_token' => csrf_token()])
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 });
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');

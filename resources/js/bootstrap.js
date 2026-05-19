@@ -22,3 +22,28 @@ window.refreshCsrfToken = async () => {
 
     return response;
 };
+
+window.axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        const isCsrfError = error.response?.status === 419;
+        const isCsrfRefreshRequest = originalRequest?.url?.includes('/sanctum/csrf-cookie')
+            || originalRequest?.url?.includes('/csrf-cookie');
+
+        if (isCsrfError && originalRequest && !originalRequest.__csrfRetry && !isCsrfRefreshRequest) {
+            originalRequest.__csrfRetry = true;
+            await window.refreshCsrfToken();
+            const refreshedToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            if (refreshedToken) {
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers['X-CSRF-TOKEN'] = refreshedToken;
+            }
+
+            return window.axios(originalRequest);
+        }
+
+        return Promise.reject(error);
+    },
+);
