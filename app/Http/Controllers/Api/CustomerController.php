@@ -22,7 +22,8 @@ class CustomerController extends Controller
         return Customer::query()
             ->when($search, fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', '%'.PhoneNormalizer::normalize($search).'%');
+                    ->orWhere('phone', 'like', '%'.PhoneNormalizer::normalize($search).'%')
+                    ->orWhere('email', 'like', "%{$search}%");
             }))
             ->latest()
             ->paginate((int) $request->query('per_page', 10));
@@ -40,6 +41,17 @@ class CustomerController extends Controller
     {
         $data = $request->validated();
         $customer->update($data);
+
+        return response()->json($customer->fresh());
+    }
+
+    public function toggle(Request $request, Customer $customer)
+    {
+        $data = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $customer->update(['is_active' => $data['is_active']]);
 
         return response()->json($customer->fresh());
     }

@@ -30,24 +30,30 @@ Route::prefix('api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/dashboard', DashboardController::class);
 
-        Route::middleware('role:admin,promo_manager,reports_manager')->group(function () {
+        Route::middleware('role:super_admin,admin,promo_manager,reports_manager')->group(function () {
             Route::get('/customers', [CustomerController::class, 'index']);
             Route::get('/branches', [BranchController::class, 'index']);
             Route::get('/promo-codes', [PromoCodeController::class, 'index']);
             Route::get('/users', [UserController::class, 'index']);
         });
 
-        Route::middleware('role:admin,promo_manager')->group(function () {
+        Route::middleware('role:super_admin,admin,promo_manager')->group(function () {
             Route::apiResource('customers', CustomerController::class)->only(['store', 'update', 'destroy']);
+            Route::patch('/customers/{customer}/toggle', [CustomerController::class, 'toggle']);
             Route::post('/customers/import', [CustomerController::class, 'import']);
             Route::get('/customers-template', [CustomerController::class, 'template']);
 
             Route::apiResource('branches', BranchController::class)->only(['store', 'update', 'destroy']);
+            Route::patch('/branches/{branch}/toggle', [BranchController::class, 'toggle']);
             Route::apiResource('promo-codes', PromoCodeController::class)
                 ->parameters(['promo-codes' => 'promoCode'])
                 ->only(['store', 'update', 'destroy']);
+            Route::patch('/promo-codes/{promoCode}/toggle', [PromoCodeController::class, 'toggle']);
             Route::get('/promo-codes-generate', [PromoCodeController::class, 'generate']);
-            Route::post('/users', [UserController::class, 'store'])->middleware('role:admin');
+            Route::post('/users', [UserController::class, 'store'])->middleware('role:super_admin');
+            Route::put('/users/{user}', [UserController::class, 'update'])->middleware('role:super_admin');
+            Route::patch('/users/{user}/toggle', [UserController::class, 'toggle'])->middleware('role:super_admin');
+            Route::patch('/users/{user}/password', [UserController::class, 'changePassword'])->middleware('role:super_admin');
         });
 
         Route::middleware('role:seller')->group(function () {
@@ -56,7 +62,7 @@ Route::prefix('api')->group(function () {
             Route::get('/seller/redemptions', [SellerPromoController::class, 'myRedemptions']);
         });
 
-        Route::middleware('role:admin,promo_manager,reports_manager')->group(function () {
+        Route::middleware('role:super_admin,admin,promo_manager,reports_manager')->group(function () {
             Route::get('/reports/redemptions', [ReportController::class, 'index']);
             Route::get('/reports/redemptions/export', [ReportController::class, 'export']);
         });

@@ -15,6 +15,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_SUPER_ADMIN = 'super_admin';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_PROMO_MANAGER = 'promo_manager';
     public const ROLE_SELLER = 'seller';
@@ -22,6 +23,7 @@ class User extends Authenticatable
 
     public const ROLES = [
         self::ROLE_ADMIN,
+        self::ROLE_SUPER_ADMIN,
         self::ROLE_PROMO_MANAGER,
         self::ROLE_SELLER,
         self::ROLE_REPORTS_MANAGER,
@@ -35,6 +37,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'role',
         'is_active',
@@ -81,11 +84,16 @@ class User extends Authenticatable
 
     public function canManagePromos(): bool
     {
-        return $this->hasRole([self::ROLE_ADMIN, self::ROLE_PROMO_MANAGER]);
+        return $this->hasRole([self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_PROMO_MANAGER]);
     }
 
     public function canViewReports(): bool
     {
-        return $this->hasRole([self::ROLE_ADMIN, self::ROLE_PROMO_MANAGER, self::ROLE_REPORTS_MANAGER]);
+        return $this->hasRole([self::ROLE_SUPER_ADMIN, self::ROLE_ADMIN, self::ROLE_PROMO_MANAGER, self::ROLE_REPORTS_MANAGER]);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === self::ROLE_SUPER_ADMIN;
     }
 }

@@ -12,53 +12,89 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Super Admin',
+                'phone' => '01010000000',
+                'password' => 'password',
+                'role' => User::ROLE_SUPER_ADMIN,
+                'is_active' => true,
+            ],
+        );
+
         $admin = User::updateOrCreate(
-            ['email' => 'admin@promo.test'],
-            ['name' => 'Admin User', 'password' => 'password', 'role' => User::ROLE_ADMIN, 'is_active' => true],
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'phone' => '01010000001',
+                'password' => 'password',
+                'role' => User::ROLE_ADMIN,
+                'is_active' => true,
+            ],
         );
 
         $manager = User::updateOrCreate(
-            ['email' => 'manager@promo.test'],
-            ['name' => 'Promo Manager', 'password' => 'password', 'role' => User::ROLE_PROMO_MANAGER, 'is_active' => true],
+            ['email' => 'manager@example.com'],
+            [
+                'name' => 'Promo Manager',
+                'phone' => '01010000002',
+                'password' => 'password',
+                'role' => User::ROLE_PROMO_MANAGER,
+                'is_active' => true,
+            ],
         );
 
         $seller = User::updateOrCreate(
-            ['email' => 'seller@promo.test'],
-            ['name' => 'Seller User', 'password' => 'password', 'role' => User::ROLE_SELLER, 'is_active' => true],
+            ['email' => 'seller@example.com'],
+            [
+                'name' => 'Seller User',
+                'phone' => '01010000003',
+                'password' => 'password',
+                'role' => User::ROLE_SELLER,
+                'is_active' => true,
+            ],
         );
 
         $reports = User::updateOrCreate(
-            ['email' => 'reports@promo.test'],
-            ['name' => 'Reports Manager', 'password' => 'password', 'role' => User::ROLE_REPORTS_MANAGER, 'is_active' => true],
+            ['email' => 'reports@example.com'],
+            [
+                'name' => 'Reports Manager',
+                'phone' => '01010000004',
+                'password' => 'password',
+                'role' => User::ROLE_REPORTS_MANAGER,
+                'is_active' => true,
+            ],
         );
 
-        $branchA = Branch::updateOrCreate(
-            ['code' => 'BR-CAIRO-01'],
-            ['name' => 'فرع القاهرة', 'city' => 'القاهرة', 'address' => 'مدينة نصر', 'is_active' => true],
+        $mainBranch = Branch::updateOrCreate(
+            ['code' => 'MAIN'],
+            ['name' => 'فرع رئيسي', 'city' => 'القاهرة', 'address' => 'المقر الرئيسي', 'is_active' => true],
         );
 
-        $branchB = Branch::updateOrCreate(
-            ['code' => 'BR-GIZA-01'],
-            ['name' => 'فرع الجيزة', 'city' => 'الجيزة', 'address' => 'الدقي', 'is_active' => true],
+        $testBranch = Branch::updateOrCreate(
+            ['code' => 'TEST'],
+            ['name' => 'فرع تجريبي', 'city' => 'الجيزة', 'address' => 'منطقة تجريبية', 'is_active' => true],
         );
 
-        $seller->branches()->syncWithoutDetaching([$branchA->id]);
+        $seller->branches()->sync([$testBranch->id]);
 
-        $customerA = Customer::updateOrCreate(
-            ['phone' => '01000000001'],
-            ['name' => 'عميل تجريبي 1', 'email' => 'customer1@example.com', 'city' => 'القاهرة', 'notes' => 'عميل تجريبي', 'is_active' => true, 'created_by' => $manager->id],
-        );
+        $customers = collect([
+            ['name' => 'عميل تجريبي 1', 'phone' => '01000000001', 'email' => 'customer1@example.com', 'city' => 'القاهرة'],
+            ['name' => 'عميل تجريبي 2', 'phone' => '01000000002', 'email' => 'customer2@example.com', 'city' => 'الجيزة'],
+            ['name' => 'عميل تجريبي 3', 'phone' => '01000000003', 'email' => 'customer3@example.com', 'city' => 'الإسكندرية'],
+            ['name' => 'عميل تجريبي 4', 'phone' => '01000000004', 'email' => 'customer4@example.com', 'city' => 'القاهرة'],
+            ['name' => 'عميل تجريبي 5', 'phone' => '01000000005', 'email' => 'customer5@example.com', 'city' => 'المنصورة'],
+        ])->map(fn (array $data) => Customer::updateOrCreate(
+            ['phone' => $data['phone']],
+            $data + ['notes' => 'بيانات اختبار', 'is_active' => true, 'created_by' => $manager->id],
+        ));
 
-        $customerB = Customer::updateOrCreate(
-            ['phone' => '01000000002'],
-            ['name' => 'عميل تجريبي 2', 'email' => null, 'city' => 'الجيزة', 'notes' => null, 'is_active' => true, 'created_by' => $manager->id],
-        );
-
-        $promo = PromoCode::updateOrCreate(
+        $activePromo = PromoCode::updateOrCreate(
             ['code' => 'WELCOME10'],
             [
-                'title' => 'خصم ترحيبي',
-                'description' => 'كود تجريبي لاختبار التفعيل من شاشة البائع.',
+                'title' => 'كود ترحيبي نشط',
+                'description' => 'كود تجريبي مربوط بعملاء وفرع تجريبي.',
                 'discount_type' => PromoCode::DISCOUNT_PERCENTAGE,
                 'discount_value' => 10,
                 'max_invoice_amount' => 5000,
@@ -72,7 +108,27 @@ class DatabaseSeeder extends Seeder
             ],
         );
 
-        $promo->customers()->syncWithoutDetaching([$customerA->id, $customerB->id]);
-        $promo->branches()->syncWithoutDetaching([$branchA->id]);
+        $expiredPromo = PromoCode::updateOrCreate(
+            ['code' => 'EXPIRED15'],
+            [
+                'title' => 'كود منتهي',
+                'description' => 'كود منتهي لاختبار رسائل الصلاحية.',
+                'discount_type' => PromoCode::DISCOUNT_PERCENTAGE,
+                'discount_value' => 15,
+                'max_invoice_amount' => 3000,
+                'max_discount_amount' => 250,
+                'starts_at' => now()->subMonth(),
+                'expires_at' => now()->subDay(),
+                'max_total_uses' => 20,
+                'max_uses_per_customer' => 1,
+                'is_active' => true,
+                'created_by' => $manager->id,
+            ],
+        );
+
+        $activePromo->customers()->sync($customers->pluck('id')->all());
+        $activePromo->branches()->sync([$testBranch->id]);
+        $expiredPromo->customers()->sync([$customers->first()->id]);
+        $expiredPromo->branches()->sync([$testBranch->id]);
     }
 }

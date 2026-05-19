@@ -58,6 +58,17 @@ class PromoCodeController extends Controller
         return response()->json($promoCode->fresh()->load(['customers:id,name,phone', 'branches:id,name,code'])->loadCount('redemptions'));
     }
 
+    public function toggle(Request $request, PromoCode $promoCode)
+    {
+        $data = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $promoCode->update(['is_active' => $data['is_active']]);
+
+        return response()->json($promoCode->fresh()->load(['customers:id,name,phone', 'branches:id,name,code'])->loadCount('redemptions'));
+    }
+
     public function destroy(PromoCode $promoCode)
     {
         if ($promoCode->redemptions()->exists()) {

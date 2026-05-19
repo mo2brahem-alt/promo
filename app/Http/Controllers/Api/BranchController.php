@@ -13,7 +13,8 @@ class BranchController extends Controller
     {
         $search = trim((string) $request->query('search'));
 
-        return Branch::with('users:id,name,email,role')
+        return Branch::with('users:id,name,email,phone,role')
+            ->withCount(['users as sellers_count' => fn ($query) => $query->where('role', 'seller')])
             ->when($search, fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
@@ -32,7 +33,7 @@ class BranchController extends Controller
         $branch = Branch::create($data);
         $branch->users()->sync($sellerIds);
 
-        return response()->json($branch->load('users:id,name,email,role'), 201);
+        return response()->json($branch->load('users:id,name,email,phone,role'), 201);
     }
 
     public function update(BranchRequest $request, Branch $branch)
@@ -44,7 +45,18 @@ class BranchController extends Controller
         $branch->update($data);
         $branch->users()->sync($sellerIds);
 
-        return response()->json($branch->fresh()->load('users:id,name,email,role'));
+        return response()->json($branch->fresh()->load('users:id,name,email,phone,role'));
+    }
+
+    public function toggle(Request $request, Branch $branch)
+    {
+        $data = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $branch->update(['is_active' => $data['is_active']]);
+
+        return response()->json($branch->fresh()->load('users:id,name,email,phone,role'));
     }
 
     public function destroy(Branch $branch)
