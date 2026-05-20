@@ -37,11 +37,11 @@
 body {
     margin: 0;
     background:
-        linear-gradient(120deg, rgba(8, 145, 178, .18), transparent 34%),
-        linear-gradient(240deg, rgba(124, 58, 237, .14), transparent 36%),
-        linear-gradient(20deg, rgba(249, 115, 22, .12), transparent 42%),
+        radial-gradient(circle at 18% 24%, rgba(8, 145, 178, .18), transparent 28%),
+        radial-gradient(circle at 78% 18%, rgba(124, 58, 237, .12), transparent 30%),
+        radial-gradient(circle at 64% 78%, rgba(249, 115, 22, .10), transparent 32%),
         var(--bg);
-    background-size: 220% 220%;
+    background-size: 160% 160%;
     color: var(--text);
     font-family: Tahoma, Arial, ui-sans-serif, system-ui, sans-serif;
     overflow-x: hidden;
@@ -54,12 +54,14 @@ body::before {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background:
-        repeating-linear-gradient(135deg, rgba(8, 145, 178, .07) 0 1px, transparent 1px 28px),
-        repeating-linear-gradient(45deg, rgba(37, 99, 235, .05) 0 1px, transparent 1px 36px);
-    background-size: 160% 160%;
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.22));
-    animation: patternSlide 26s linear infinite;
+    background-image: url('/images/network-background.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: .78;
+    mix-blend-mode: multiply;
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,.70));
+    animation: networkDrift 22s ease-in-out infinite alternate;
 }
 
 body::after {
@@ -69,10 +71,12 @@ body::after {
     z-index: -1;
     pointer-events: none;
     background:
-        linear-gradient(105deg, transparent 0 14%, rgba(255,255,255,.34) 14% 15%, transparent 15% 48%, rgba(255,255,255,.24) 48% 49%, transparent 49%),
-        linear-gradient(255deg, transparent 0 64%, rgba(8,145,178,.10) 64% 65%, transparent 65%);
+        radial-gradient(circle at 22% 22%, rgba(255,255,255,.34), transparent 18%),
+        radial-gradient(circle at 78% 26%, rgba(255,255,255,.26), transparent 20%),
+        radial-gradient(circle at 52% 74%, rgba(255,255,255,.30), transparent 24%),
+        linear-gradient(105deg, transparent 0 22%, rgba(255,255,255,.20) 22% 23%, transparent 23% 60%, rgba(255,255,255,.16) 60% 61%, transparent 61%);
     transform: translate3d(0,0,0);
-    animation: glassRibbons 16s ease-in-out infinite alternate;
+    animation: glassRibbons 14s ease-in-out infinite alternate;
 }
 
 @keyframes pageGradientShift {
@@ -85,13 +89,15 @@ body::after {
     }
 }
 
-@keyframes patternSlide {
+@keyframes networkDrift {
     from {
-        background-position: 0 0;
+        opacity: .62;
+        transform: translate3d(-16px, -8px, 0) scale(1.02);
     }
 
     to {
-        background-position: 220px 160px;
+        opacity: .86;
+        transform: translate3d(18px, 10px, 0) scale(1.06);
     }
 }
 
