@@ -456,23 +456,42 @@ const StatBarChart = {
         maxValue() {
             return Math.max(...this.chartRows.map((row) => Number(row.value || 0)), 1);
         },
+        sparklinePoints() {
+            if (!this.chartRows.length) return '';
+            const width = 320;
+            const height = 72;
+            const step = this.chartRows.length > 1 ? width / (this.chartRows.length - 1) : width;
+
+            return this.chartRows.map((row, index) => {
+                const x = index * step;
+                const y = height - ((Number(row.value || 0) / this.maxValue) * (height - 10)) - 5;
+                return `${x},${y}`;
+            }).join(' ');
+        },
     },
     methods: {
-        height(row) {
-            return `${Math.max(8, (Number(row.value || 0) / this.maxValue) * 100)}%`;
+        width(row) {
+            return `${Math.max(6, (Number(row.value || 0) / this.maxValue) * 100)}%`;
         },
     },
     template: `
-        <div class="chart-box">
+        <div class="chart-box performance-chart">
             <div class="chart-head">
                 <h4>{{ title }}</h4>
                 <span class="label">{{ chartRows.length ? 'تحديث مباشر حسب الفلاتر' : 'لا توجد بيانات' }}</span>
             </div>
-            <div v-if="chartRows.length" class="bar-chart">
-                <div v-for="row in chartRows" :key="row.label" class="bar-item">
-                    <div class="bar-value">{{ row.value }}{{ unit || '' }}</div>
-                    <div class="bar-track"><span :style="{ height: height(row) }"></span></div>
-                    <div class="bar-label" :title="row.label">{{ row.label }}</div>
+            <div v-if="chartRows.length" class="spark-card">
+                <svg class="sparkline" viewBox="0 0 320 72" preserveAspectRatio="none">
+                    <polyline :points="sparklinePoints" />
+                </svg>
+                <div class="progress-list">
+                    <div v-for="(row, index) in chartRows" :key="row.label" class="progress-row" :style="{ '--row-index': index }">
+                        <div class="progress-meta">
+                            <strong :title="row.label">{{ row.label }}</strong>
+                            <span>{{ row.value }}{{ unit || '' }}</span>
+                        </div>
+                        <div class="progress-track"><span :style="{ width: width(row) }"></span></div>
+                    </div>
                 </div>
             </div>
             <div v-else class="empty-chart">لا توجد بيانات للفترة المحددة</div>
@@ -486,34 +505,27 @@ const StatDonutChart = {
         total() {
             return (this.rows || []).reduce((sum, row) => sum + Number(row.value || 0), 0);
         },
-        gradient() {
+        ringRows() {
             const colors = ['#0891b2', '#7c3aed', '#f97316', '#2563eb'];
-            let start = 0;
-            const segments = (this.rows || []).map((row, index) => {
-                const percent = this.total ? (Number(row.value || 0) / this.total) * 100 : 0;
-                const end = start + percent;
-                const segment = `${colors[index % colors.length]} ${start}% ${end}%`;
-                start = end;
-                return segment;
+            return (this.rows || []).map((row, index) => {
+                const percent = this.total ? Math.round((Number(row.value || 0) / this.total) * 100) : 0;
+                return { ...row, percent, color: colors[index % colors.length] };
             });
-
-            return segments.length ? `conic-gradient(${segments.join(', ')})` : 'conic-gradient(#e5e7eb 0 100%)';
         },
     },
     template: `
-        <div class="chart-box donut-box">
+        <div class="chart-box rings-box">
             <div class="chart-head">
                 <h4>{{ title }}</h4>
                 <span class="label">إجمالي {{ total }}</span>
             </div>
-            <div class="donut-wrap">
-                <div class="donut" :style="{ background: gradient }"><span>{{ total }}</span></div>
-                <div class="donut-legend">
-                    <div v-for="row in rows" :key="row.label" class="legend-row">
-                        <span></span>
-                        <strong>{{ row.label }}</strong>
-                        <em>{{ row.value }}</em>
+            <div class="rings-grid">
+                <div v-for="row in ringRows" :key="row.label" class="ring-card">
+                    <div class="ring" :style="{ '--percent': row.percent, '--ring-color': row.color }">
+                        <span>{{ row.percent }}%</span>
                     </div>
+                    <strong>{{ row.label }}</strong>
+                    <em>{{ row.value }}</em>
                 </div>
             </div>
         </div>
