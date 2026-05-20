@@ -57,7 +57,7 @@
 
             <div class="content">
                 <div v-if="message" :class="['notice', messageType === 'error' ? 'error' : '']">{{ message }}</div>
-                <DashboardView v-if="view === 'dashboard'" :dashboard="dashboard" :can-reports="canReports" @go="setView" />
+                <DashboardView v-if="view === 'dashboard'" :dashboard="dashboard" :can-reports="canReports" @go="setView" @filter="loadDashboard" />
                 <SellerView v-if="view === 'seller'" :validation="seller.validation" :last="seller.last" :busy="busy" @validate="validatePromo" @redeem="redeemPromo" />
                 <CustomersView v-if="view === 'customers'" :customers="customers" :busy="busy" @search="loadCustomers" @save="saveCustomer" @edit="editCustomer" @remove="deleteCustomer" @toggle="toggleCustomer" @import="importCustomers" @template="downloadTemplate" />
                 <BranchesView v-if="view === 'branches'" :branches="branches" :users="users" :busy="busy" @search="loadBranches" @save="saveBranch" @edit="editBranch" @remove="deleteBranch" @toggle="toggleBranch" />
@@ -251,8 +251,8 @@ async function bootstrapView() {
     }
 }
 
-async function loadDashboard() {
-    dashboard.value = await api(() => axios.get('/api/dashboard'));
+async function loadDashboard(filters = {}) {
+    dashboard.value = await api(() => axios.get('/api/dashboard', { params: filters }));
 }
 
 async function loadUsers() {
@@ -447,10 +447,117 @@ const RecentTable = {
     `,
 };
 
+const StatBarChart = {
+    props: ['title', 'rows', 'unit'],
+    computed: {
+        chartRows() {
+            return (this.rows || []).slice(0, 10);
+        },
+        maxValue() {
+            return Math.max(...this.chartRows.map((row) => Number(row.value || 0)), 1);
+        },
+    },
+    methods: {
+        height(row) {
+            return `${Math.max(8, (Number(row.value || 0) / this.maxValue) * 100)}%`;
+        },
+    },
+    template: `
+        <div class="chart-box">
+            <div class="chart-head">
+                <h4>{{ title }}</h4>
+                <span class="label">{{ chartRows.length ? 'تحديث مباشر حسب الفلاتر' : 'لا توجد بيانات' }}</span>
+            </div>
+            <div v-if="chartRows.length" class="bar-chart">
+                <div v-for="row in chartRows" :key="row.label" class="bar-item">
+                    <div class="bar-value">{{ row.value }}{{ unit || '' }}</div>
+                    <div class="bar-track"><span :style="{ height: height(row) }"></span></div>
+                    <div class="bar-label" :title="row.label">{{ row.label }}</div>
+                </div>
+            </div>
+            <div v-else class="empty-chart">لا توجد بيانات للفترة المحددة</div>
+        </div>
+    `,
+};
+
+const StatDonutChart = {
+    props: ['title', 'rows'],
+    computed: {
+        total() {
+            return (this.rows || []).reduce((sum, row) => sum + Number(row.value || 0), 0);
+        },
+        gradient() {
+            const colors = ['#0891b2', '#7c3aed', '#f97316', '#2563eb'];
+            let start = 0;
+            const segments = (this.rows || []).map((row, index) => {
+                const percent = this.total ? (Number(row.value || 0) / this.total) * 100 : 0;
+                const end = start + percent;
+                const segment = `${colors[index % colors.length]} ${start}% ${end}%`;
+                start = end;
+                return segment;
+            });
+
+            return segments.length ? `conic-gradient(${segments.join(', ')})` : 'conic-gradient(#e5e7eb 0 100%)';
+        },
+    },
+    template: `
+        <div class="chart-box donut-box">
+            <div class="chart-head">
+                <h4>{{ title }}</h4>
+                <span class="label">إجمالي {{ total }}</span>
+            </div>
+            <div class="donut-wrap">
+                <div class="donut" :style="{ background: gradient }"><span>{{ total }}</span></div>
+                <div class="donut-legend">
+                    <div v-for="row in rows" :key="row.label" class="legend-row">
+                        <span></span>
+                        <strong>{{ row.label }}</strong>
+                        <em>{{ row.value }}</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `,
+};
+
 const DashboardView = {
-    components: { RecentTable },
+    components: { RecentTable, StatBarChart, StatDonutChart },
     props: ['dashboard', 'canReports'],
-    emits: ['go'],
+    emits: ['go', 'filter'],
+    data: () => ({
+        filters: { from: '', to: '', branch_id: '', promo_code_id: '', seller_id: '' },
+    }),
+    watch: {
+        dashboard: {
+            immediate: true,
+            handler(value) {
+                if (value?.filters && !this.filters.from && !this.filters.to) {
+                    this.filters.from = value.filters.from || '';
+                    this.filters.to = value.filters.to || '';
+                }
+            },
+        },
+    },
+    computed: {
+        options() {
+            return this.dashboard.filter_options || { branches: [], promo_codes: [], sellers: [] };
+        },
+        summary() {
+            return this.dashboard.summary || {};
+        },
+        charts() {
+            return this.dashboard.charts || {};
+        },
+    },
+    methods: {
+        applyFilters() {
+            this.$emit('filter', { ...this.filters });
+        },
+        clearFilters() {
+            this.filters = { from: '', to: '', branch_id: '', promo_code_id: '', seller_id: '' };
+            this.$emit('filter', {});
+        },
+    },
     template: `
         <section class="grid">
             <div v-if="dashboard.role === 'seller'" class="panel">
@@ -468,6 +575,35 @@ const DashboardView = {
                     <div class="card"><div class="label">الأكواد النشطة</div><div class="metric">{{ dashboard.active_codes_count || 0 }}</div></div>
                     <div class="card"><div class="label">استخدامات اليوم</div><div class="metric">{{ dashboard.today_redemptions_count || 0 }}</div></div>
                     <div class="card"><div class="label">خصومات اليوم</div><div class="metric">{{ dashboard.today_discount_amount || 0 }}</div></div>
+                </div>
+                <div class="panel analytics-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3 style="margin:0">إحصائيات المشروع</h3>
+                            <div class="label">رسوم بيانية ديناميكية حسب الفترة والفرع والكود والبائع</div>
+                        </div>
+                        <div class="actions"><button class="btn primary" @click="applyFilters">تطبيق الفلاتر</button><button class="btn" @click="clearFilters">مسح</button></div>
+                    </div>
+                    <div class="form dashboard-filters">
+                        <label class="field"><span>من تاريخ</span><input class="input" type="date" v-model="filters.from"></label>
+                        <label class="field"><span>إلى تاريخ</span><input class="input" type="date" v-model="filters.to"></label>
+                        <label class="field"><span>الفرع</span><select class="select" v-model="filters.branch_id"><option value="">كل الفروع</option><option v-for="branch in options.branches" :key="branch.id" :value="branch.id">{{ branch.name }}</option></select></label>
+                        <label class="field"><span>الكود</span><select class="select" v-model="filters.promo_code_id"><option value="">كل الأكواد</option><option v-for="code in options.promo_codes" :key="code.id" :value="code.id">{{ code.code }}</option></select></label>
+                        <label class="field"><span>البائع</span><select class="select" v-model="filters.seller_id"><option value="">كل البائعين</option><option v-for="seller in options.sellers" :key="seller.id" :value="seller.id">{{ seller.name }}</option></select></label>
+                    </div>
+                    <div class="cards analytics-summary">
+                        <div class="card"><div class="label">استخدامات الفترة</div><div class="metric">{{ summary.total_redemptions || 0 }}</div></div>
+                        <div class="card"><div class="label">إجمالي الفواتير</div><div class="metric">{{ summary.total_invoice_amount || 0 }}</div></div>
+                        <div class="card"><div class="label">إجمالي الخصومات</div><div class="metric">{{ summary.total_discount_amount || 0 }}</div></div>
+                        <div class="card"><div class="label">عملاء استخدموا أكواد</div><div class="metric">{{ summary.unique_customers || 0 }}</div></div>
+                    </div>
+                    <div class="analytics-grid">
+                        <StatBarChart title="الاستخدام اليومي" :rows="charts.daily_redemptions || []" />
+                        <StatBarChart title="أعلى الفروع استخدامًا" :rows="charts.branch_usage || []" />
+                        <StatBarChart title="أعلى الأكواد استخدامًا" :rows="charts.promo_usage || []" />
+                        <StatBarChart title="أداء البائعين" :rows="charts.seller_usage || []" />
+                        <StatDonutChart title="حالة الأكواد" :rows="charts.code_status || []" />
+                    </div>
                 </div>
                 <div class="panel">
                     <div class="panel-head"><h3 style="margin:0">آخر 10 استخدامات</h3><button v-if="canReports" class="btn" @click="$emit('go', 'reports')">التقارير</button></div>
