@@ -72,7 +72,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 
-const logoUrl = '/images/elbardisi-logo.svg';
+const logoUrl = '/images/elbardisi-logo.png';
 const user = ref(null);
 const loading = ref(true);
 const busy = ref(false);
